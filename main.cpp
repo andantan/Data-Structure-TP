@@ -1,230 +1,88 @@
-#include <cstdio>
-#include <cstdlib>
+#include "LinkedQueueMaze.h"
+#include "LInkedStackMaze.h"
+#include "Util.h"
+#include "data.h"
 
 #include <Windows.h>
 
-#include "data.h"
-#include "CoordinateQueue.h"
-
-#ifndef MAX_SIZE
-#define MAX_SIZE 100
-#endif // !MAX_SIZE
-
-#ifndef MAZE_SIZE
-#define MAZE_SIZE 10
-#endif // !MAZE_SIZE
-
-char maze[MAZE_SIZE][MAZE_SIZE] = {
-	{'1','1','1','1','1','1','1','1','1','1'}, 
-	{'M','0','0','0','1','0','0','0','0','1'}, 
-	{'1','0','0','0','1','0','0','1','0','1'}, 
-	{'1','0','1','1','1','0','0','1','0','1'}, 
-	{'1','0','0','0','1','0','0','1','0','1'}, 
-	{'1','0','1','0','1','0','0','1','0','1'}, 
-	{'1','0','1','0','1','0','0','1','0','1'}, 
-	{'1','0','1','0','1','0','0','1','0','1'}, 
-	{'1','0','1','0','0','0','0','1','0','X'}, 
-	{'1','1','1','1','1','1','1','1','1','1'} 
-};
-
-char mazeProj[MAZE_SIZE][MAZE_SIZE] = {
-	{'1','1','1','1','1','1','1','1','1','1'},
-	{'M','0','0','0','1','0','0','0','0','1'},
-	{'1','0','0','0','1','0','0','1','0','1'},
-	{'1','0','1','1','1','0','0','1','0','1'},
-	{'1','0','0','0','1','0','0','1','0','1'},
-	{'1','0','1','0','1','0','0','1','0','1'},
-	{'1','0','1','0','1','0','0','1','0','1'},
-	{'1','0','1','0','1','0','0','1','0','1'},
-	{'1','0','1','0','0','0','0','1','0','X'},
-	{'1','1','1','1','1','1','1','1','1','1'}
-}; // Projection of Mouse's moving onto mazeProj
-
-//char maze[MAZE_SIZE][MAZE_SIZE] = { {'1','1','1','1','1'},
-//								 {'M','0','1','0','1'},
-//								 {'1','0','0','0','1'},
-//								 {'1','1','1','0','X'},
-//								 {'1','1','1','1','1'} };
-//
-//char mazeProj[MAZE_SIZE][MAZE_SIZE] = { {'1','1','1','1','1'},
-//								 {'M','0','1','0','1'},
-//								 {'1','0','0','0','1'},
-//								 {'1','1','1','0','X'},
-//								 {'1','1','1','1','1'} };
-
-void init(Stack* p)
-{
-	p->top = -1;
-}
-
-bool isFull(Stack* p)
-{
-	return (p->top == MAX_SIZE - 1);
-}
-
-bool isEmpty(Stack* p)
-{
-	return (p->top == -1);
-}
-
-void push(Stack* p, Coordinate data)
-{
-	if (isFull(p)) printf("STACK IS FULL.\n");
-	else
-	{
-		p->top++;
-
-		p->data[p->top].x = data.x;
-		p->data[p->top].y = data.y;
-	}
-}
-
-Coordinate pop(stack* p)
-{
-	if (isEmpty(p))
-	{
-		printf("STACK IS EMPTY.\n");
-	}
-
-	return p->data[(p->top)--];
-}
-
-void Crawl(Stack* p, int x, int y)
-{
-	if (x < 0 || y < 0 ||
-		MAZE_SIZE < x || MAZE_SIZE < y) return;
-	
-	if (maze[x][y] != '1' && maze[x][y] != '.')
-	{
-		Coordinate tmp;
-
-		tmp.x = x;
-		tmp.y = y;
-
-		push(p, tmp);
-	}
-}
-
-void printMaze()
-{
-	system("cls");
-
-	for (int i = 0; i < MAZE_SIZE; i++)
-	{
-		for (int j = 0; j < MAZE_SIZE; j++)
-		{
-			if (mazeProj[i][j] == '0') printf("□");
-			else if (mazeProj[i][j] == '1') printf("■");
-			else if (mazeProj[i][j] == 'M' || mazeProj[i][j] == 'R') printf("▶");
-			else if (mazeProj[i][j] == 'L') printf("◀");
-			else if (mazeProj[i][j] == 'U') printf("▲");
-			else if (mazeProj[i][j] == 'D') printf("▼");
-			else if (mazeProj[i][j] == '.') printf("⊙");
-			else printf("▒");
-		}
-
-		printf("\n");
-	}
-}
-
-void WhereIsMouse(Coordinate* beforeCoordinate, Coordinate* afterCoordinate)
-{
-	short beforeMouseX = beforeCoordinate->x;
-	short beforeMouseY = beforeCoordinate->y;
-	short afterMouseX = afterCoordinate->x;
-	short afterMouseY = afterCoordinate->y;
-
-	if ((afterMouseX - beforeMouseX) > 0 && !(afterMouseY - beforeMouseY))
-	{
-		mazeProj[beforeMouseX][beforeMouseY] = '.';
-		mazeProj[afterMouseX][afterMouseY] = 'D';
-	}
-	else if ((afterMouseX - beforeMouseX) < 0 && !(afterMouseY - beforeMouseY))
-	{
-		mazeProj[beforeMouseX][beforeMouseY] = '.';
-		mazeProj[afterMouseX][afterMouseY] = 'U';
-	}
-	else if (!(afterMouseX - beforeMouseX) && (afterMouseY - beforeMouseY) > 0)
-	{
-		mazeProj[beforeMouseX][beforeMouseY] = '.';
-		mazeProj[afterMouseX][afterMouseY] = 'R';
-	}
-	else if (!(afterMouseX - beforeMouseX) && (afterMouseY - beforeMouseY) < 0)
-	{
-		mazeProj[beforeMouseX][beforeMouseY] = '.';
-		mazeProj[afterMouseX][afterMouseY] = 'L';
-	}
-
-	printMaze();
-
-	printf("(%d, %d) -> (%d, %d)\n", beforeMouseX, beforeMouseY, afterMouseX, afterMouseY);
-}
+using namespace std;
 
 int main()
 {
-	Stack* s = new Stack();
-	Coordinate currentCoordinate= { -1, -1 };
-	Coordinate beforeCoordinate;
 
-	CoordinateQueue queue;
+	int select;
 
-	int i, j, x, y;
+	cout << "1. LinkedStack을 이용한 경로찾기" << endl;
+	cout << "2. LInkedQueue를 이용한 경로찾기(DFS)" << endl;
 
-	init(s);
+	cout << "선택: ";
+	cin >> select;
 
-	for (i = 0; i < MAZE_SIZE; i++)
+	if (select == 1)
 	{
-		for (j = 0; j < MAZE_SIZE; j++)
+		DFSMaze dfs;
+
+		CoordinateQueue LinkedStackResultCoordinateQueue;
+
+		element beforeCoordinate;
+		element currenCoordinate;
+
+		dfs.ExecuteLinkedStackFindPath(&LinkedStackResultCoordinateQueue);
+
+		printStackVersionMaze();
+
+		Sleep(500);
+
+		while (!LinkedStackResultCoordinateQueue.QisEmpty())
 		{
-			if (maze[i][j] == 'M')
-			{
-				currentCoordinate.x = i;
-				currentCoordinate.y = j;
+			beforeCoordinate = LinkedStackResultCoordinateQueue.dequeue();
+			currenCoordinate = LinkedStackResultCoordinateQueue.peek();
 
-				queue.enqueue(&currentCoordinate);
-			}
+			if (currenCoordinate.r == -1) break;
+
+			WhereIsMouseStackVersion(&beforeCoordinate, &currenCoordinate);
+
+			Sleep(100);
 		}
+
+		printf("\n");
+
+		LinkedStackResultCoordinateQueue.display();
+
+		dfs.deleteLinkedStackeMazeProj();
 	}
-
-	printMaze();
-	Sleep(500);
-
-	while (maze[currentCoordinate.x][currentCoordinate.y] != 'X')
+	else
 	{
-		x = currentCoordinate.x;
-		y = currentCoordinate.y;
+		CoordinateQueue LinkedQueueResultCoordinateQueue;
 
-		maze[x][y] = '.';
+		ExecuteLinkedQueueFindPath(&LinkedQueueResultCoordinateQueue);
 
-		Crawl(s, x + 1, y);
-		Crawl(s, x - 1, y);
-		Crawl(s, x, y + 1);
-		Crawl(s, x, y - 1);
+		element beforeCoordinate;
+		element currenCoordinate;
 
-		if (isEmpty(s))
+
+		printQueueVersionMaze();
+
+		Sleep(500);
+
+		while (!LinkedQueueResultCoordinateQueue.QisEmpty())
 		{
-			printf("FAILED\n");
-			
-			break;
+			beforeCoordinate = LinkedQueueResultCoordinateQueue.dequeue();
+			currenCoordinate = LinkedQueueResultCoordinateQueue.peek();
+
+			if (currenCoordinate.r == -1) break;
+
+			WhereIsMouseQueueVersion(&beforeCoordinate, &currenCoordinate);
+
+			Sleep(100);
 		}
-		else
-		{
-			beforeCoordinate.x = x;
-			beforeCoordinate.y = y;
 
-			currentCoordinate = pop(s);
+		printf("\n");
 
-			queue.enqueue(&currentCoordinate);
+		LinkedQueueResultCoordinateQueue.display();
 
-			WhereIsMouse(&beforeCoordinate, &currentCoordinate);
-
-			Sleep(500);
-		}
+		deleteLinkedQueueMazeProj();
 	}
-
-	queue.display();
-
-	delete s;
 
 	return 0;
 }
